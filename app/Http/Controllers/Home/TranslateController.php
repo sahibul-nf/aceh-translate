@@ -34,7 +34,7 @@ class TranslateController extends Controller
                 $translateFrom = $data['translateFrom'];
                 $translateTo = $data['translateTo'];
 
-                $query = Dictionary::where($translateFrom, html_entity_decode($word));
+                $query = Dictionary::where($translateFrom, 'REGEXP', html_entity_decode($word));
 
                 if ($query->exists()) {
 
@@ -86,9 +86,10 @@ class TranslateController extends Controller
 
                     $wordInput = html_entity_decode($word);
 
-                    $recommendationList = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom);
+                    $jaroWinklerRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'jaroWinkler');
+                    $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
 
-                    return view('home.translate', ['data' => $data, 'list' => $recommendationList]);
+                    return view('home.translate', ['data' => $data, 'jaroWinklerRecom' => $jaroWinklerRecom, 'levenshteinRecom' => $levenshteinRecom]);
                 }
             } else {
                 return abort(404);
@@ -228,7 +229,7 @@ class DictionarySimiliarity
         $this->similiarity = $similiarity;
     }
 
-    public static function getRecommendationList(string $word, string $language)
+    public static function getRecommendationList(string $word, string $language, string $algorithm)
     {
         $dictionaries = array();
 
@@ -237,7 +238,6 @@ class DictionarySimiliarity
 
         $similiarity = 0;
 
-        
         foreach ($allData as $key => $value) {
             $word2 = '';
             if ($language == 'aceh') {
@@ -249,9 +249,18 @@ class DictionarySimiliarity
             }
 
             $comparison = new \Atomescrochus\StringSimilarities\Compare();
-            $similiarity = $comparison->jaroWinkler($word, $word2);
 
-            if ($similiarity >= 0.75) {
+            if ($algorithm == 'jaroWinkler') {
+                $similiarity = $comparison->jaroWinkler($word, $word2);
+            }
+
+            if ($algorithm == 'levenshtein') {
+                $lev = $comparison->levenshtein($word, $word2);
+                // normalisasi nilai levenshtein agar mendekati 1 (semakin mirip) dan 0 (semakin tidak mirip)
+                $similiarity = 1 - ($lev / max(strlen($word), strlen($word2)));
+            }
+
+            // if ($similiarity >= 0.75) {
                 $dictionary = new DictionarySimiliarity(
                     $value->aceh,
                     $value->indonesia,
@@ -260,7 +269,7 @@ class DictionarySimiliarity
                 );
 
                 array_push($dictionaries, $dictionary);
-            }
+            // }
         }
 
         $order = array();
