@@ -131,16 +131,16 @@
                 <textarea class="form-control" id="translateResult" rows="3"
                     placeholder="{{ isset($data['word']) ? 'Terjemahan tidak ditemukan' : 'Terjemahan akan muncul disini' }}" readonly>
                     @if (isset($data['translatedWord']))
-                        @if (is_array($data['translatedWord']))
-                            {{ ucfirst(join(', ', $data['translatedWord'])) }}
-                        @else
-                            {{ ucfirst($data['translatedWord']) }}
-                        @endif
-                    @endif
+@if (is_array($data['translatedWord']))
+{{ ucfirst(join(', ', $data['translatedWord'])) }}
+@else
+{{ ucfirst($data['translatedWord']) }}
+@endif
+@endif
                 </textarea>
             </div>
         </div>
-        
+
         {{-- UNCOMMENT THIS CODE WHEN DATA IS AVAILABLE ON DB --}}
         {{-- <div class="col-lg-6 col-sm-12">
             <div class="card">
@@ -212,7 +212,7 @@
                     @endif
                 </div>
             </div> --}}
-        </div>
+    </div>
     </div>
 
     {{-- Modal with State No Data --}}
@@ -241,7 +241,7 @@
     {{-- Modal with Recommendation List View --}}
     <div class="modal fade" id="recommendationList" aria-hidden="true" aria-labelledby="exampleModalToggleLabel"
         tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     {{-- <h5 class="modal-title" id="exampleModalToggleLabel">Modal 1</h5> --}}
@@ -249,25 +249,57 @@
                 </div>
                 <div class="modal-body text-center px-10">
                     <ion-icon name="alert-circle-outline"></ion-icon>
-                    <h1 class="fs-4">Opps</h1>
+                    <h1 class="fs-4 font-medium">Opps</h1>
                     <p class="mt-8 mb-8 text-base">Terjemahan tidak ditemukan. <br>Mungkin kata yang kamu maksud seperti
                         dibawah ini.
                     </p>
 
-                    @if (isset($list))
-                        @if (count($list) > 0)
-                            <div class="list-group" id="list-tab" role="tablist">
-                                @if ($data['translateFrom'] == 'aceh')
-                                    @foreach ($list as $item)
-                                        <a class="list-group-item list-group-item-action"
-                                            href="{{ route('home.translate', ['word' => $item->aceh, 'translateTo' => 'indonesia']) }}">{{ $item->aceh }}</a>
-                                    @endforeach
-                                @elseif ($data['translateFrom'] == 'indonesia')
-                                    @foreach ($list as $item)
-                                        <a class="list-group-item list-group-item-action"
-                                            href="{{ route('home.translate', ['word' => $item->indonesia, 'translateTo' => 'aceh']) }}">{{ $item->indonesia }}</a>
-                                    @endforeach
-                                @endif
+                    @if (isset($jaroWinklerRecom) && isset($levenshteinRecom))
+                        @if (count($jaroWinklerRecom) > 0)
+                            <div class="row">
+                                <div class="list-group col" id="list-tab" role="tablist">
+                                    @if ($data['translateFrom'] == 'aceh')
+                                        <div class="row px-2">
+                                            <a href="" class="col-sm-9 text-left font-medium">Jaro Winkler:</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}s</a>
+                                        </div>
+                                        @foreach ($jaroWinklerRecom as $item)
+                                            <a class="list-group-item list-group-item-action"
+                                                href="{{ route('home.translate', ['word' => $item->aceh, 'translateTo' => 'indonesia']) }}">{{ $item->aceh }}</a>
+                                        @endforeach
+                                    @elseif ($data['translateFrom'] == 'indonesia')
+                                        <div class="row px-2">
+                                            <a href="" class="col-sm-9 text-left font-medium">Jaro Winkler:</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}s</a>
+                                        </div>
+                                        @foreach ($jaroWinklerRecom as $item)
+                                            <a class="list-group-item list-group-item-action"
+                                                href="{{ route('home.translate', ['word' => $item->indonesia, 'translateTo' => 'aceh']) }}">{{ $item->indonesia }}</a>
+                                        @endforeach
+                                    @endif
+                                </div>
+
+                                <div class="list-group col" id="list-tab" role="tablist">
+                                    @if ($data['translateFrom'] == 'aceh')
+                                        <div class="row px-2">
+                                            <a href="" class="col-sm-9 text-left font-medium">Levenshtein:</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}s</a>
+                                        </div>
+                                        @foreach ($levenshteinRecom as $item)
+                                            <a class="list-group-item list-group-item-action"
+                                                href="{{ route('home.translate', ['word' => $item->aceh, 'translateTo' => 'indonesia']) }}">{{ $item->aceh }}</a>
+                                        @endforeach
+                                    @elseif ($data['translateFrom'] == 'indonesia')
+                                        <div class="row px-2">
+                                            <a href="" class="col-sm-9 text-left font-medium">Levenshtein:</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}s</a>
+                                        </div>
+                                        @foreach ($levenshteinRecom as $item)
+                                            <a class="list-group-item list-group-item-action"
+                                                href="{{ route('home.translate', ['word' => $item->indonesia, 'translateTo' => 'aceh']) }}">{{ $item->indonesia }}</a>
+                                        @endforeach
+                                    @endif
+                                </div>
                             </div>
                         @else
                             <p class="text-base mb-8">Tidak ada hasil rekomendasi!</p>
@@ -332,7 +364,7 @@
     </script>
 @endsection
 
-{{-- @if (isset($list) && $data['translateFrom'] == 'aceh')
+{{-- @if (isset($jaroWinklerRecom) && $data['translateFrom'] == 'aceh')
                 var myModal = new bootstrap.Modal(document.getElementById('recommendationList'), {
                     keyboard: false
                 });

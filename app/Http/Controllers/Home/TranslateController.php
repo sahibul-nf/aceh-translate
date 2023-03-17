@@ -9,6 +9,7 @@ use App\Models\Dictionary; // Memanggil model Dictionary
 use App\Models\VocabularyRequest; // Memanggil model VocabularyRequest
 use Illuminate\Http\Request; // Manggil package untuk mengelola request
 use App\Models\VocabularySuggestion; // Memanggil model VocabularySuggestion
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator; // Manggil package untuk mengelola validator
 
 class TranslateController extends Controller
@@ -86,10 +87,15 @@ class TranslateController extends Controller
 
                     $wordInput = html_entity_decode($word);
 
+                    $start = now();
                     $jaroWinklerRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'jaroWinkler');
-                    $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
+                    $timeJaroWinkler = now()->diffInSeconds($start);
 
-                    return view('home.translate', ['data' => $data, 'jaroWinklerRecom' => $jaroWinklerRecom, 'levenshteinRecom' => $levenshteinRecom]);
+                    $start = now();
+                    $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
+                    $timeLevenshtein = now()->diffInSeconds($start);
+
+                    return view('home.translate', ['data' => $data, 'jaroWinklerRecom' => $jaroWinklerRecom, 'levenshteinRecom' => $levenshteinRecom, 'timeJaroWinkler' => $timeJaroWinkler, 'timeLevenshtein' => $timeLevenshtein]);
                 }
             } else {
                 return abort(404);

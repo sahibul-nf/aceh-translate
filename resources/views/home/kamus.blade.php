@@ -5,7 +5,7 @@
 @endsection
 @section('content')
     <div class="row">
-        <div class="col-lg-6 col-sm-12">
+        <div class="col-lg-7 col-sm-12">
             <div class="card">
                 <div class="card-body">
                     <table class="table table-bordered table-striped">
@@ -49,7 +49,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-6 col-sm-12">
+        <div class="col-lg-5 col-sm-12">
             <div class="card">
                 <div class="card-body">
                     @if (isset($data['word']))
@@ -138,7 +138,11 @@
 @section('custom-script')
     <script>
         $(document).ready( function () {
-            $('#daftar-kosakata').DataTable();
+            $('#daftar-kosakata').DataTable(
+                {
+                    responsive: true,
+                }
+            );
         } );
     </script>
 @endsection
