@@ -261,7 +261,7 @@
                                     @if ($data['translateFrom'] == 'aceh')
                                         <div class="row px-2">
                                             <a href="" class="col-sm-9 text-left font-medium">Jaro Winkler:</a>
-                                            <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}s</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}ms</a>
                                         </div>
                                         @foreach ($jaroWinklerRecom as $item)
                                             <a class="list-group-item list-group-item-action"
@@ -270,7 +270,7 @@
                                     @elseif ($data['translateFrom'] == 'indonesia')
                                         <div class="row px-2">
                                             <a href="" class="col-sm-9 text-left font-medium">Jaro Winkler:</a>
-                                            <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}s</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}ms</a>
                                         </div>
                                         @foreach ($jaroWinklerRecom as $item)
                                             <a class="list-group-item list-group-item-action"
@@ -283,7 +283,7 @@
                                     @if ($data['translateFrom'] == 'aceh')
                                         <div class="row px-2">
                                             <a href="" class="col-sm-9 text-left font-medium">Levenshtein:</a>
-                                            <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}s</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}ms</a>
                                         </div>
                                         @foreach ($levenshteinRecom as $item)
                                             <a class="list-group-item list-group-item-action"
@@ -292,7 +292,7 @@
                                     @elseif ($data['translateFrom'] == 'indonesia')
                                         <div class="row px-2">
                                             <a href="" class="col-sm-9 text-left font-medium">Levenshtein:</a>
-                                            <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}s</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}ms</a>
                                         </div>
                                         @foreach ($levenshteinRecom as $item)
                                             <a class="list-group-item list-group-item-action"

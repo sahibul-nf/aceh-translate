@@ -86,14 +86,14 @@ class TranslateController extends Controller
                     $data['audio'] = null;
 
                     $wordInput = html_entity_decode($word);
+                    
+                    $start = now();
+                    $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
+                    $timeLevenshtein = now()->diffInMilliseconds($start);
 
                     $start = now();
                     $jaroWinklerRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'jaroWinkler');
-                    $timeJaroWinkler = now()->diffInSeconds($start);
-
-                    $start = now();
-                    $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
-                    $timeLevenshtein = now()->diffInSeconds($start);
+                    $timeJaroWinkler = now()->diffInMilliseconds($start);
 
                     return view('home.translate', ['data' => $data, 'jaroWinklerRecom' => $jaroWinklerRecom, 'levenshteinRecom' => $levenshteinRecom, 'timeJaroWinkler' => $timeJaroWinkler, 'timeLevenshtein' => $timeLevenshtein]);
                 }
@@ -284,11 +284,9 @@ class DictionarySimiliarity
             array_push($order, $dictionaries[$i]->similiarity);
         }
 
-        for ($i = 0; $i < count($dictionaries); $i++) {
-            usort($dictionaries, function ($a, $b) use ($order) {
-                return $a->similiarity < $b->similiarity;
-            });
-        }
+        usort($dictionaries, function ($a, $b) use ($order) {
+            return $a->similiarity < $b->similiarity;
+        });
 
         $finalResult = array();
 
