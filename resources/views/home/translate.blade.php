@@ -260,7 +260,7 @@
                                 <div class="list-group col" id="list-tab" role="tablist">
                                     @if ($data['translateFrom'] == 'aceh')
                                         <div class="row px-2">
-                                            <a href="" class="col-sm-9 text-left font-medium">Jaro Winkler:</a>
+                                            <a href="" class="col-sm-8 text-left font-medium">Jaro Winkler:</a>
                                             <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}ms</a>
                                         </div>
                                         @foreach ($jaroWinklerRecom as $item)
@@ -269,7 +269,7 @@
                                         @endforeach
                                     @elseif ($data['translateFrom'] == 'indonesia')
                                         <div class="row px-2">
-                                            <a href="" class="col-sm-9 text-left font-medium">Jaro Winkler:</a>
+                                            <a href="" class="col-sm-8 text-left font-medium">Jaro Winkler:</a>
                                             <a href="" class="col-sm text-right font-light">{{ $timeJaroWinkler }}ms</a>
                                         </div>
                                         @foreach ($jaroWinklerRecom as $item)
@@ -282,7 +282,7 @@
                                 <div class="list-group col" id="list-tab" role="tablist">
                                     @if ($data['translateFrom'] == 'aceh')
                                         <div class="row px-2">
-                                            <a href="" class="col-sm-9 text-left font-medium">Levenshtein:</a>
+                                            <a href="" class="col-sm-8 text-left font-medium">Levenshtein:</a>
                                             <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}ms</a>
                                         </div>
                                         @foreach ($levenshteinRecom as $item)
@@ -291,10 +291,32 @@
                                         @endforeach
                                     @elseif ($data['translateFrom'] == 'indonesia')
                                         <div class="row px-2">
-                                            <a href="" class="col-sm-9 text-left font-medium">Levenshtein:</a>
+                                            <a href="" class="col-sm-8 text-left font-medium">Levenshtein:</a>
                                             <a href="" class="col-sm text-right font-light">{{ $timeLevenshtein }}ms</a>
                                         </div>
                                         @foreach ($levenshteinRecom as $item)
+                                            <a class="list-group-item list-group-item-action"
+                                                href="{{ route('home.translate', ['word' => $item->indonesia, 'translateTo' => 'aceh']) }}">{{ $item->indonesia }}</a>
+                                        @endforeach
+                                    @endif
+                                </div>
+
+                                <div class="list-group col" id="list-tab" role="tablist">
+                                    @if ($data['translateFrom'] == 'aceh')
+                                        <div class="row px-2">
+                                            <a href="" class="col-sm-8 text-left font-medium">Brute Force:</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeBf }}ms</a>
+                                        </div>
+                                        @foreach ($bfRecom as $item)
+                                            <a class="list-group-item list-group-item-action"
+                                                href="{{ route('home.translate', ['word' => $item->aceh, 'translateTo' => 'indonesia']) }}">{{ $item->aceh }}</a>
+                                        @endforeach
+                                    @elseif ($data['translateFrom'] == 'indonesia')
+                                        <div class="row px-2">
+                                            <a href="" class="col-sm-8 text-left font-medium">Brute Force:</a>
+                                            <a href="" class="col-sm text-right font-light">{{ $timeBf }}ms</a>
+                                        </div>
+                                        @foreach ($bfRecom as $item)
                                             <a class="list-group-item list-group-item-action"
                                                 href="{{ route('home.translate', ['word' => $item->indonesia, 'translateTo' => 'aceh']) }}">{{ $item->indonesia }}</a>
                                         @endforeach

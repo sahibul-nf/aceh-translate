@@ -86,7 +86,7 @@ class TranslateController extends Controller
                     $data['audio'] = null;
 
                     $wordInput = html_entity_decode($word);
-                    
+
                     $start = now();
                     $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
                     $timeLevenshtein = now()->diffInMilliseconds($start);
@@ -95,7 +95,11 @@ class TranslateController extends Controller
                     $jaroWinklerRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'jaroWinkler');
                     $timeJaroWinkler = now()->diffInMilliseconds($start);
 
-                    return view('home.translate', ['data' => $data, 'jaroWinklerRecom' => $jaroWinklerRecom, 'levenshteinRecom' => $levenshteinRecom, 'timeJaroWinkler' => $timeJaroWinkler, 'timeLevenshtein' => $timeLevenshtein]);
+                    $start = now();
+                    $bruteForceRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'bruteForce');
+                    $timeLBruteForce = now()->diffInMilliseconds($start);
+
+                    return view('home.translate', ['data' => $data, 'jaroWinklerRecom' => $jaroWinklerRecom, 'levenshteinRecom' => $levenshteinRecom, 'bfRecom' => $bruteForceRecom, 'timeBf' => $timeLBruteForce, 'timeJaroWinkler' => $timeJaroWinkler, 'timeLevenshtein' => $timeLevenshtein]);
                 }
             } else {
                 return abort(404);
@@ -165,59 +169,6 @@ class TranslateController extends Controller
 
         return redirect()->route('home.translate')->with('success', 'Berhasil request terjemahan');
     }
-
-    // Fungsi untuk menampilkan rekomendasi kata pencarian
-    public function getRecommendationList()
-    {
-
-        $dictionaries = array();
-
-        // load all data from db
-        $allData = Dictionary::all();
-
-        $similiarity = 0;
-
-        foreach ($allData as $key => $value) {
-            $comparison = new \Atomescrochus\StringSimilarities\Compare();
-            $similiarity = $comparison->jaroWinkler('kuéh', $value->aceh);
-
-            if ($similiarity >= 0.75) {
-                $dictionary = new DictionarySimiliarity(
-                    $value->aceh,
-                    $value->indonesia,
-                    $value->inggris,
-                    $similiarity,
-                );
-
-                array_push($dictionaries, $dictionary);
-            }
-        }
-
-        $order = array();
-
-        for ($i = 0; $i < count($dictionaries); $i++) {
-            array_push($order, $dictionaries[$i]->similiarity);
-        }
-
-        for ($i = 0; $i < count($dictionaries); $i++) {
-            usort($dictionaries, function ($a, $b) use ($order) {
-                return $a->similiarity < $b->similiarity;
-            });
-        }
-
-        $finalResult = array();
-
-        if (count($dictionaries) > 5) {
-            for ($i = 0; $i < count($dictionaries); $i++) {
-                if ($i < 5) {
-                    array_push($finalResult, $dictionaries[$i]);
-                }
-            }
-        }
-
-        // echo json_encode($finalResult);
-        return view('home.recommendation-list', ['list' => $finalResult]);
-    }
 }
 
 class DictionarySimiliarity
@@ -266,15 +217,20 @@ class DictionarySimiliarity
                 $similiarity = 1 - ($lev / max(strlen($word), strlen($word2)));
             }
 
-            // if ($similiarity >= 0.75) {
-                $dictionary = new DictionarySimiliarity(
-                    $value->aceh,
-                    $value->indonesia,
-                    $value->inggris,
-                    $similiarity,
-                );
+            // brute force
+            if ($algorithm == 'bruteForce') {
+                $similiarity = DictionarySimiliarity::bruteForce($word2, $word);
+            }
 
-                array_push($dictionaries, $dictionary);
+            // if ($similiarity >= 0.75) {
+            $dictionary = new DictionarySimiliarity(
+                $value->aceh,
+                $value->indonesia,
+                $value->inggris,
+                $similiarity,
+            );
+
+            array_push($dictionaries, $dictionary);
             // }
         }
 
@@ -300,5 +256,20 @@ class DictionarySimiliarity
 
         // echo json_encode($finalResult);
         return $finalResult;
+    }
+
+    // Brute-force algorithm for comparison of two strings
+    public static function bruteForce($word1, $word2)
+    {
+        $length1 = strlen($word1);
+        $length2 = strlen($word2);
+        $similarity = 0;
+        $minLength = min($length1, $length2);
+        for ($i = 0; $i < $minLength; $i++) {
+            if ($word1[$i] == $word2[$i]) {
+                $similarity++;
+            }
+        }
+        return $similarity / $minLength;
     }
 }
