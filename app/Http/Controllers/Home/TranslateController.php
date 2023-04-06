@@ -22,7 +22,9 @@ class TranslateController extends Controller
         if ($word != null && $translateTo != null) {
             if ($translateTo == 'aceh' || $translateTo == 'indonesia') {
 
-                $data['word'] = html_entity_decode($word);
+                $wordInput = html_entity_decode($word);
+
+                $data['word'] = $wordInput;
 
                 if ($translateTo == 'aceh') {
                     $data['translateFrom'] = 'indonesia';
@@ -35,18 +37,45 @@ class TranslateController extends Controller
                 $translateFrom = $data['translateFrom'];
                 $translateTo = $data['translateTo'];
 
-                $query = Dictionary::where($translateFrom, 'REGEXP', html_entity_decode($word));
+                $query = Dictionary::where($translateFrom, 'REGEXP', $wordInput);
 
+                // If the query results is has data
                 if ($query->exists()) {
+                    // query has data, but the query results is not contain any word that match with the input
+                    if (!in_array($wordInput, $query->get()->pluck($translateFrom)->toArray())) {
+                        $data['translatedWord'] = null;
+                        $data['description'] = null;
+                        $data['imagePreview'] = null;
+                        $data['audio'] = null;
 
+                        $start = now();
+                        $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
+                        $timeLevenshtein = now()->diffInMilliseconds($start);
+
+                        $start = now();
+                        $jaroWinklerRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'jaroWinkler');
+                        $timeJaroWinkler = now()->diffInMilliseconds($start);
+
+                        $start = now();
+                        $bruteForceRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'bruteForce');
+                        $timeLBruteForce = now()->diffInMilliseconds($start);
+
+                        return view('home.translate', ['data' => $data, 'jaroWinklerRecom' => $jaroWinklerRecom, 'levenshteinRecom' => $levenshteinRecom, 'bfRecom' => $bruteForceRecom, 'timeBf' => $timeLBruteForce, 'timeJaroWinkler' => $timeJaroWinkler, 'timeLevenshtein' => $timeLevenshtein]);
+                    }
+
+                    // if the query results has data more than 1
                     if ($query->get()->count() > 1) {
-
                         $translatedWord = [];
                         $description = [];
                         $imagePreview = [];
                         $audio = [];
 
                         foreach ($query->get() as $row) {
+                            // handle has data more than 1, but not match with the input word by check the length
+                            if (strlen($wordInput) != strlen($row->$translateFrom)) {
+                                continue;
+                            }
+
                             array_push($translatedWord, $row->$translateTo);
                             if ($row->deskripsi != null) {
                                 array_push($description, $row->deskripsi);
@@ -73,19 +102,20 @@ class TranslateController extends Controller
                         $data['description'] = $description;
                         $data['imagePreview'] = $imagePreview;
                         $data['audio'] = $audio;
-                    } else {
+                    } 
+                    else {
                         $data['translatedWord'] = $query->first()->$translateTo;
                         $data['description'] = $query->first()->deskripsi;
                         $data['imagePreview'] = $query->first()->gambar;
                         $data['audio'] = $query->first()->audio;
                     }
+                
+                // If the query results no has data
                 } else {
                     $data['translatedWord'] = null;
                     $data['description'] = null;
                     $data['imagePreview'] = null;
                     $data['audio'] = null;
-
-                    $wordInput = html_entity_decode($word);
 
                     $start = now();
                     $levenshteinRecom = DictionarySimiliarity::getRecommendationList($wordInput, $translateFrom, 'levenshtein');
